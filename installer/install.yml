@@ -1,6 +1,8 @@
 ---
 - name: Build and deploy AWX
   hosts: all
+  vars_files:
+    - "vars/venv.yml"
   roles:
     - {role: check_vars}
     - {role: image_build, when: "dockerhub_base is not defined"}

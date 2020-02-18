@@ -136,10 +136,6 @@ kind: StatefulSet
 metadata:
   name: {{ kubernetes_deployment_name }}
   namespace: {{ kubernetes_namespace }}
-  {% if openshift_host is defined %}
-  labels:
-    app: {{ kubernetes_deployment_name }}
-  {% endif %}
 spec:
   serviceName: {{ kubernetes_deployment_name }}
   replicas: 1
@@ -184,24 +180,25 @@ spec:
             - >-
               yum install -y ansible curl python-setuptools epel-release \
                 openssl openssl-devel gcc python-devel &&
-              yum install -y python-virtualenv python36 python36-devel &&
-              mkdir -p {{ custom_venvs_path }} &&
+              yum install -y python-virtualenv python36 python36-devel && mkdir -p {{ custom_venvs_path }} &&
 {% for custom_venv in custom_venvs %}
               virtualenv -p {{ custom_venv.python | default(custom_venvs_python) }} \
-                {{ custom_venvs_path }}/{{ custom_venv.name }} &&
+                {{ custom_venvs_path }}/{{ custom_venv.name }}/ &&
               source {{ custom_venvs_path }}/{{ custom_venv.name }}/bin/activate &&
               {{ custom_venvs_path }}/{{ custom_venv.name }}/bin/pip install {{ trusted_hosts }} -U psutil \
                 "ansible=={{ custom_venv.python_ansible_version }}" &&
 {% if custom_venv.python_modules is defined %}
               {{ custom_venvs_path }}/{{ custom_venv.name }}/bin/pip install {{ trusted_hosts }} -U \
-                {% for module in custom_venv.python_modules %}{{ module }} {% endfor %} &&
+                {{ custom_venv.python_modules | join(' ') }} &&
 {% endif %}
               deactivate &&
 {% endfor %}
               :
           volumeMounts:
-            - name: custom-venvs
-              mountPath: {{ custom_venvs_path }}
+{% for custom_venv in custom_venvs %}
+            - name: custom-venvs-{{ custom_venv.name }}
+              mountPath: {{ custom_venvs_path }}/{{ custom_venv.name }}
+{% endfor %}
 {% endif %}
       containers:
         - name: {{ kubernetes_deployment_name }}-web
@@ -221,8 +218,10 @@ spec:
               readOnly: false
 {% endif %}
 {% if custom_venvs is defined %}
-            - name: custom-venvs
-              mountPath: {{ custom_venvs_path }}
+{% for custom_venv in custom_venvs %}
+            - name: custom-venvs-{{ custom_venv.name }}
+              mountPath: /var/lib/awx/venv/{{ custom_venv.name }}
+{% endfor %}
 {% endif %}
             - name: {{ kubernetes_deployment_name }}-application-config
               mountPath: "/etc/tower/settings.py"
@@ -270,8 +269,10 @@ spec:
               readOnly: true
 {% endif %}
 {% if custom_venvs is defined %}
-            - name: custom-venvs
-              mountPath: {{ custom_venvs_path }}
+{% for custom_venv in custom_venvs %}
+            - name: custom-venvs-{{ custom_venv.name }}
+              mountPath: /var/lib/awx/venv/{{ custom_venv.name }}
+{% endfor %}
 {% endif %}
             - name: {{ kubernetes_deployment_name }}-application-config
               mountPath: "/etc/tower/settings.py"
@@ -289,10 +290,6 @@ spec:
           env:
             - name: AWX_SKIP_MIGRATIONS
               value: "1"
-            - name: MY_POD_UID
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.uid
           resources:
             requests:
               memory: "{{ task_mem_request }}Gi"
@@ -415,8 +412,10 @@ spec:
             type: Directory
 {% endif %}
 {% if custom_venvs is defined %}
-        - name: custom-venvs
+{% for custom_venv in custom_venvs %}
+        - name: custom-venvs-{{ custom_venv.name }}
           emptyDir: {}
+{% endfor %}
 {% endif %}
         - name: {{ kubernetes_deployment_name }}-application-config
           configMap:

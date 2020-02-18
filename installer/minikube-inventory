@@ -18,13 +18,13 @@ dockerhub_base=ansible
 # openshift_pg_emptydir=True
 
 # Kubernetes Install
-# kubernetes_context=test-cluster
-# kubernetes_namespace=awx
+kubernetes_context=minikube
+kubernetes_namespace=awx
 # Optional Kubernetes Variables
-# pg_image_registry=docker.io
-# pg_serviceaccount=awx
-# pg_volume_capacity=5
-# pg_persistence_storageClass=StorageClassName
+#pg_image_registry=docker.io
+pg_serviceaccount=awx
+pg_volume_capacity=10
+pg_persistence_storageClass=standard
 # pg_cpu_limit=1000
 # pg_mem_limit=2
 
@@ -78,13 +78,17 @@ docker_compose_dir="~/.awx/awxcompose"
 # docker_registry_username=developer
 
 
+# Docker_image will not attempt to push to remote if the image already exists locally
+# Set this to true to delete images from docker on the build host so that they are pushed to the remote repository
+# docker_remove_local_images=False
+
 # Set pg_hostname if you have an external postgres server, otherwise
 # a new postgres service will be created
 # pg_hostname=postgresql
 pg_username=awx
 # pg_password should be random 10 character alphanumeric string, when postgresql is running on kubernetes
 # NB: it's a limitation of the "official" postgres helm chart
-pg_password=awxpass
+pg_password="63FKZ9cxw"
 pg_database=awx
 pg_port=5432
 #pg_sslmode=require
@@ -94,7 +98,7 @@ pg_port=5432
 # pg_admin_password=postgrespass
 
 # RabbitMQ Configuration
-rabbitmq_password=awxpass
+rabbitmq_password="63FKZ9cxww!t"
 rabbitmq_erlang_cookie=cookiemonster
 
 # Use a local distribution build container image for building the AWX package
@@ -111,20 +115,20 @@ rabbitmq_erlang_cookie=cookiemonster
 # This will create or update a default admin (superuser) account in AWX, if not provided
 # then these default values are used
 admin_user=admin
-admin_password=password
+admin_password=admin
 
 # Whether or not to create preload data for demonstration purposes
-create_preload_data=True
+create_preload_data=False
 
 # AWX Secret key
 # It's *very* important that this stay the same between upgrades or you will lose the ability to decrypt
 # your credentials
-secret_key=awxsecret
+secret_key="63FKZ9cxww!t"
 
 # Build AWX with official logos
 # Requires cloning awx-logos repo as a sibling of this project.
 # Review the trademark guidelines at https://github.com/ansible/awx-logos/blob/master/TRADEMARKS.md
-# awx_official=false
+awx_official=True
 
 # Proxy
 #http_proxy=http://proxy:3128
@@ -137,13 +141,10 @@ secret_key=awxsecret
 # Alternate DNS servers
 #awx_alternate_dns_servers="10.1.2.3,10.2.3.4"
 
-# AWX project data folder. If you need access to the location where AWX stores the projects
+## AWX project data folder. If you need access to the location where AWX stores the projects
 # it manages from the docker host, you can set this to turn it into a volume for the container.
 # This will be mounted as a hostPath on your worker nodes.  It must exist prior to deploying the application (/var/lib/awx/projects)
 #project_data_dir=/var/lib/awx/projects
-
-# AWX custom virtual environment folder. Only usable for local install.
-#custom_venv_dir=/opt/my-envs/
 
 # CA Trust directory. If you need to provide custom CA certificates, supplying
 # this variable causes this directory on the host to be bind mounted over
