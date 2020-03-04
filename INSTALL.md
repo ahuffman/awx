@@ -42,7 +42,7 @@ This document provides a guide for installing AWX.
     + [Post-install](#post-install-2)
     + [Accessing AWX](#accessing-awx-2)
 
-    
+
 ## Getting started
 
 ### Clone the repo
@@ -366,6 +366,9 @@ Before starting the install process, review the [inventory](./installer/inventor
 *docker_registry_*
 
 > These settings should be used if building your own base images. You'll need access to an external registry and are responsible for making sure your kube cluster can talk to it and use it. If these are undefined and the dockerhub_ configuration settings are uncommented then the images will be pulled from dockerhub instead
+
+#### Custom Python Virtual Environments
+To build custom Python virtual environments for your deployment on kubernetes and openshift, edit the [venv.yml](./installer/vars/venv.yml) file.  There is an example configuration available which can be uncommented and modified for your project's particular use-case.
 
 ### Configuring Helm
 
