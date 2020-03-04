@@ -58,6 +58,8 @@ pg_persistence_storageClass=standard
 # memcached_mem_limit=2
 # management_cpu_limit=2000
 # management_mem_limit=2
+awx_web_venv_persistent_class=standard
+#awx_web_venv_volume_capacity=5
 
 # Common Docker parameters
 awx_task_hostname=awx

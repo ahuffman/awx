@@ -130,6 +130,23 @@ userNames:
   - system:serviceaccount:{{ kubernetes_namespace }}:awx
 {% endif %}
 
+{% if custom_venvs is defined %}
+{% for custom_venv in custom_venvs %}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "pvc-custom-venv-{{ custom_venv.name }}"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "{{ awx_web_venv_persistent_class }}"
+  resources:
+    requests:
+      storage: "{{ awx_web_venv_volume_capacity | default('5') }}Gi"
+{% endfor %}
+{% endif %}
+
 ---
 apiVersion: {{ kubernetes_statefulset_api_version }}
 kind: StatefulSet
@@ -414,7 +431,9 @@ spec:
 {% if custom_venvs is defined %}
 {% for custom_venv in custom_venvs %}
         - name: custom-venvs-{{ custom_venv.name }}
-          emptyDir: {}
+          # emptyDir: {}
+          persistentVolumeClaim:
+            claimName: "pvc-custom-venv-{{ custom_venv.name }}"
 {% endfor %}
 {% endif %}
         - name: {{ kubernetes_deployment_name }}-application-config
